@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
@@ -19,6 +20,7 @@ async function run() {
         const productCollection = client.db('nutsManufacture').collection('products')
         const bookingCollection = client.db('nutsManufacture').collection('booking')
         const userCollection = client.db('nutsManufacture').collection('users')
+        const reviewsCollection = client.db('nutsManufacture').collection('reviews')
 
         // all product get and show home page
         app.get('/products', async (req, res) => {
@@ -43,7 +45,14 @@ async function run() {
             res.send(result)
         })
 
-        // 
+        // booking data get for show my orders in dashboard
+        app.get('/booking', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email };
+            const booking = await bookingCollection.find(query).toArray()
+            res.send(booking)
+        })
+
         // update login api
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email
@@ -54,7 +63,23 @@ async function run() {
                 $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.SECRET_TOKEN, { expiresIn: '1h' })
+            res.send({ result, token })
+        })
+
+        // user reviews post api
+        app.post('/reviews', async (req, res) => {
+            const reviews = req.body
+            const result = await reviewsCollection.insertOne(reviews);
             res.send(result)
+        })
+
+        // user reviews get api
+        app.get('/reviews', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email };
+            const reviews = await reviewsCollection.find(query).toArray()
+            res.send(reviews)
         })
 
 
