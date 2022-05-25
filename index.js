@@ -11,6 +11,20 @@ const port = process.env.PORT || 5000;
 app.use(cors())
 app.use(express.json())
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'UnAuthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.SECRET_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    });
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_APSS}@cluster0.cremm.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -54,6 +68,25 @@ async function run() {
             res.send(booking)
         })
 
+        // admin api
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const requester = req.decoded.email
+            const requesterAccount = await userCollection.findOne({ email: requester })
+            if (requesterAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                res.status(403).send({ message: 'forbidden' })
+            }
+
+        });
+
         // update login api
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email
@@ -67,6 +100,8 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.SECRET_TOKEN, { expiresIn: '1h' })
             res.send({ result, token })
         })
+
+
 
         // user reviews post api
         app.post('/reviews', async (req, res) => {
@@ -91,7 +126,7 @@ async function run() {
         })
 
         // all user get 
-        app.get('/alUsers', async (req, res) => {
+        app.get('/allUsers', async (req, res) => {
             const users = await userCollection.find().toArray()
             res.send(users)
         })
