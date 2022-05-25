@@ -4,6 +4,7 @@ const app = express()
 require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const res = require('express/lib/response');
 const port = process.env.PORT || 5000;
 
 // middleWares
@@ -87,6 +88,12 @@ async function run() {
             const query = {};
             const allReviews = await reviewsCollection.find(query).toArray()
             res.send(allReviews)
+        })
+
+        // all user get 
+        app.get('/alUsers', async (req, res) => {
+            const users = await userCollection.find().toArray()
+            res.send(users)
         })
 
 
