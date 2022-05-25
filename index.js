@@ -74,12 +74,19 @@ async function run() {
             res.send(result)
         })
 
-        // user reviews get api
+        // my reviews get api
         app.get('/reviews', async (req, res) => {
             const email = req.query.email
             const query = { email: email };
             const reviews = await reviewsCollection.find(query).toArray()
             res.send(reviews)
+        })
+
+        // all user reviews get api
+        app.get('/allReviews', async (req, res) => {
+            const query = {};
+            const allReviews = await reviewsCollection.find(query).toArray()
+            res.send(allReviews)
         })
 
 
