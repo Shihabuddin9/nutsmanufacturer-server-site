@@ -36,6 +36,7 @@ async function run() {
         const bookingCollection = client.db('nutsManufacture').collection('booking')
         const userCollection = client.db('nutsManufacture').collection('users')
         const reviewsCollection = client.db('nutsManufacture').collection('reviews')
+        const addProductCollection = client.db('nutsManufacture').collection('addProduct')
 
         // all product get and show home page
         app.get('/products', async (req, res) => {
@@ -129,6 +130,13 @@ async function run() {
         app.get('/allUsers', async (req, res) => {
             const users = await userCollection.find().toArray()
             res.send(users)
+        })
+
+        // admin add products api
+        app.post('/addProduct', async (req, res) => {
+            const addProcuct = req.body
+            const result = await addProductCollection.insertOne(addProcuct);
+            res.send(result)
         })
 
 
