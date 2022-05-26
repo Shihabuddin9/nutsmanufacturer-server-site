@@ -139,6 +139,21 @@ async function run() {
             res.send(result)
         })
 
+        // admin add products get api
+        app.get('/addProducts', async (req, res) => {
+            const query = {};
+            const addProducts = await addProductCollection.find(query).toArray()
+            res.send(addProducts)
+        })
+
+        // admin product delete api
+        app.delete('/delete/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const result = await addProductCollection.deleteOne(query);
+            res.send(result)
+        })
+
 
     }
     finally {
