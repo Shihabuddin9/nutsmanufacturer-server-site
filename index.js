@@ -9,6 +9,19 @@ const port = process.env.PORT || 5000;
 
 // middleWares
 app.use(cors())
+const corsConfig = {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+}
+app.use(cors(corsConfig))
+app.options("*", cors(corsConfig))
+app.use(express.json())
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,authorization")
+    next()
+})
 app.use(express.json())
 
 function verifyJWT(req, res, next) {
@@ -66,6 +79,14 @@ async function run() {
             const email = req.query.email
             const query = { email: email };
             const booking = await bookingCollection.find(query).toArray()
+            res.send(booking)
+        })
+
+        // get for payment
+        app.get('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const booking = await bookingCollection.findOne(query)
             res.send(booking)
         })
 
