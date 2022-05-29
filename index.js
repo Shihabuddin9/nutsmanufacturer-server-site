@@ -96,7 +96,8 @@ async function run() {
         app.post('/create-payment-intent', async (req, res) => {
             const product = req.body;
             const us = product.us;
-            const amount = us * 100;
+            const amount = us * 10000;
+            console.log(amount)
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
@@ -104,6 +105,8 @@ async function run() {
             });
             res.send({ clientSecret: paymentIntent.client_secret })
         });
+
+
 
         // admin api
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
