@@ -51,6 +51,7 @@ async function run() {
         const userCollection = client.db('nutsManufacture').collection('users')
         const reviewsCollection = client.db('nutsManufacture').collection('reviews')
         const addProductCollection = client.db('nutsManufacture').collection('addProduct')
+        const paymentCollection = client.db('nutsManufacture').collection('payments')
 
         // all product get and show home page
         app.get('/products', async (req, res) => {
@@ -91,13 +92,28 @@ async function run() {
             res.send(payment)
         })
 
+        // 
+        app.patch('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const payment = req.body
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                },
+            };
+            const result = await paymentCollection.insertOne(payment)
+            const updatedBooking = await bookingCollection.updateOne(filter, updateDoc)
+            res.send(updateDoc)
+        })
 
         // payment system
         app.post('/create-payment-intent', async (req, res) => {
             const product = req.body;
             const us = product.us;
             const amount = us * 10000;
-            console.log(amount)
+
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
