@@ -5,6 +5,7 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const res = require('express/lib/response');
+const stripe = require("stripe")(process.env.STRIPE_SECREST_KEY)
 const port = process.env.PORT || 5000;
 
 // middleWares
@@ -86,8 +87,8 @@ async function run() {
         app.get('/booking/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) };
-            const booking = await bookingCollection.findOne(query)
-            res.send(booking)
+            const payment = await bookingCollection.findOne(query)
+            res.send(payment)
         })
 
         // admin api
@@ -173,6 +174,22 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await addProductCollection.deleteOne(query);
             res.send(result)
+        })
+
+        // payment system
+        app.post("/create-payment-intent", async (req, res) => {
+            const product = req.body
+            const us = product.us
+            const amount = us * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                automatic_payment_methods: ['card']
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+
         })
 
 
