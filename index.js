@@ -177,20 +177,17 @@ async function run() {
         })
 
         // payment system
-        app.post("/create-payment-intent", async (req, res) => {
-            const product = req.body
-            const us = product.us
-            const amount = us * 100
+        app.post('/create-payment-intent', async (req, res) => {
+            const product = req.body;
+            const us = product.us;
+            const amount = us * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
                 currency: 'usd',
-                automatic_payment_methods: ['card']
+                payment_method_types: ['card']
             });
-            res.send({
-                clientSecret: paymentIntent.client_secret,
-            });
-
-        })
+            res.send({ clientSecret: paymentIntent.client_secret })
+        });
 
 
     }
