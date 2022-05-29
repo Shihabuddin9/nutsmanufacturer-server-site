@@ -91,6 +91,20 @@ async function run() {
             res.send(payment)
         })
 
+
+        // payment system
+        app.post('/create-payment-intent', async (req, res) => {
+            const product = req.body;
+            const us = product.us;
+            const amount = us * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        });
+
         // admin api
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
@@ -176,18 +190,7 @@ async function run() {
             res.send(result)
         })
 
-        // payment system
-        app.post('/create-payment-intent', async (req, res) => {
-            const product = req.body;
-            const us = product.us;
-            const amount = us * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: 'usd',
-                payment_method_types: ['card']
-            });
-            res.send({ clientSecret: paymentIntent.client_secret })
-        });
+
 
 
     }
